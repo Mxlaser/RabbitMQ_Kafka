@@ -2,19 +2,31 @@ const amqp = require('amqplib');
 const config = require('../config');
 const { div } = require('../utils/math');
 
-// ... même structure
+async function start() {
+    const conn = await amqp.connect(config.rabbitUrl);
+    const ch = await conn.createChannel();
 
-const handleMessage = async (msg) => {
-  const data = JSON.parse(msg.content.toString());
-  if (data.op !== 'div' && data.op !== 'all') return ch.ack(msg);
+    await ch.assertQueue(config.calcQueue, { durable: false });
+    await ch.assertQueue(config.broadcastQueue, { durable: false });
+    await ch.assertQueue(config.resultQueue, { durable: false });
 
-  const result = {
-    ...data,
-    result: div(data.n1, data.n2)
-  };
+    const handleMessage = async (msg) => {
+        const data = JSON.parse(msg.content.toString());
+        if (data.op !== 'div' && data.op !== 'all') return ch.ack(msg);
 
-  await new Promise(res => setTimeout(res, Math.random() * 10000 + 5000));
-  ch.sendToQueue(config.resultQueue, Buffer.from(JSON.stringify(result)));
-  console.log(`[✓] DIV Worker:`, result);
-  ch.ack(msg);
-};
+        const result = {
+            ...data,
+            result: div(data.n1, data.n2)
+        };
+
+        await new Promise(res => setTimeout(res, Math.random() * 10000 + 5000));
+        ch.sendToQueue(config.resultQueue, Buffer.from(JSON.stringify(result)));
+        console.log(`[✓] DIV Worker:`, result);
+        ch.ack(msg);
+    };
+
+    ch.consume(config.calcQueue, handleMessage);
+    ch.consume(config.broadcastQueue, handleMessage);
+}
+
+start().catch(console.error);

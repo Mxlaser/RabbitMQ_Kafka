@@ -11,15 +11,15 @@ async function start() {
     await ch.assertQueue(config.resultQueue, { durable: false });
 
     const handleMessage = async (msg) => {
-    const data = JSON.parse(msg.content.toString());
-    if (data.op !== 'add' && data.op !== 'all') return ch.ack(msg);
+        const data = JSON.parse(msg.content.toString());
+        if (data.op !== 'add' && data.op !== 'all') return ch.ack(msg);
 
-    const result = {
-        ...data,
-        result: add(data.n1, data.n2)
-    };
+        const result = {
+            ...data,
+            result: add(data.n1, data.n2)
+        };
 
-    await new Promise(res => setTimeout(res, Math.random() * 10000 + 5000));
+        await new Promise(res => setTimeout(res, Math.random() * 10000 + 5000));
         ch.sendToQueue(config.resultQueue, Buffer.from(JSON.stringify(result)));
         console.log(`[✓] ADD Worker:`, result);
         ch.ack(msg);
