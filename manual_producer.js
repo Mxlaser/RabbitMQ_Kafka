@@ -16,10 +16,8 @@ async function main() {
   const conn = await amqp.connect(config.rabbitUrl);
   const ch = await conn.createChannel();
 
-  // 1️⃣ Déclaration de la queue pour opérations ciblées
   await ch.assertQueue(config.calcQueue, { durable: false });
 
-  // 2️⃣ Déclaration de l’exchange de type fanout pour "all"
   const fanoutExchange = 'broadcast';
   await ch.assertExchange(fanoutExchange, 'fanout', { durable: false });
 
@@ -36,11 +34,9 @@ async function main() {
     };
 
     if (op === 'all') {
-      // 3️⃣ Envoie du message vers l’exchange fanout
       ch.publish(fanoutExchange, '', Buffer.from(JSON.stringify(msg)));
       console.log(`[x] Envoyé à l'exchange '${fanoutExchange}' :`, msg);
     } else {
-      // 4️⃣ Envoie classique vers la queue directe
       ch.sendToQueue(config.calcQueue, Buffer.from(JSON.stringify(msg)));
       console.log(`[x] Envoyé à la queue '${config.calcQueue}' :`, msg);
     }
