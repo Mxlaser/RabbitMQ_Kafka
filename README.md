@@ -148,13 +148,6 @@ docker-compose down
 
 ---
 
-## 👥 Équipe projet
-
-- Dev 1 : Producteur, consumer, manuel, gestion des résultats
-- Dev 2 : Workers spécialisés, traitement, logique RabbitMQ
-
----
-
 ## 📄 Licence
 
 Projet académique. Usage libre dans un contexte d’apprentissage.
